@@ -11,4 +11,4 @@ uct_hello_world: uct_hello_world.o
 	$(CC) $< -L$(UCX_PATH)/lib -I$(UCX_PATH)/include -lucs -luct -g -o $@
 
 clean:
-	rm *.o uct_hello_world *~
+	rm -f *.o uct_hello_world *~

@@ -3,13 +3,13 @@
 This example demonstrates a GPU version of the UCX "Hello World" script with a client and server instance. This example specifically includes the use of CUDA memory, Tag Matching API.
 
 ## Compile this example
-```
+```bash
 # First, edit the makefile to set the correct path of `UCX_PATH` and `CUDA_PATH`
 make
 ```
 
 ## Run the example
-```
+```bash
 # Start the server
 ./ucp_gpu_hello_world
 
@@ -21,7 +21,7 @@ make
 
 The server receives the address of the client and sends the message from CUDA Memory to the client's CUDA Memory.
 
-```
+```bash
 $ ./ucp_gpu_hello_world 
 ...
 UCX_LISTENER_BACKLOG=auto
@@ -41,7 +41,7 @@ flush_ep completed with status 0 (Success)
 
 The client sends the local address to the server. Then the client receives the message (in the CUDA Memory) from the server and copy it to the host memory.
 
-```
+```bash
 # Remember to point to the UCX libraries for the client terminal as well!
 $ ./ucp_gpu_hello_world 192.168.0.208
 

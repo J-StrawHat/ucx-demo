@@ -4,11 +4,11 @@ CUDA_PATH=/usr/local/cuda-11.4/
 
 CC=nvcc
 .c.o:
-	$(CC) -L$(UCX_PATH)/lib -I$(UCX_PATH)/include -I$(CUDA_PATH) -lucp -lucs -luct -g -c $<
+	$(CC) -L$(UCX_PATH)/lib -I$(UCX_PATH)/include -I$(CUDA_PATH) -lucp -lucs -luct -g -c -DHAVE_CUDA $<
 
 
-ucp_hello_world: ucp_hello_world.o
+ucp_client_server: ucp_client_server.o
 	$(CC) $< -L$(UCX_PATH)/lib -I$(UCX_PATH)/include -lucp -lucs -luct -g -o $@
 
 clean:
-	rm -f *.o ucp_hello_world *~
+	rm -f *.o ucp_client_server *~
