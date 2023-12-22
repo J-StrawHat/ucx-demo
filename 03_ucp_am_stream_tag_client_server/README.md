@@ -56,4 +56,4 @@ ABCDEFGHIJKLMNO.
 
 ## Reference
 
-- [ucx-tutorial-hot-interconnects / 02_ucx_gpu_example](https://github.com/gt-crnch-rg/ucx-tutorial-hot-interconnects/tree/main/examples/02_ucx_gpu_example)
+- [ucx / examples /ucp_client_server.c](https://github.com/openucx/ucx/blob/master/examples/ucp_client_server.c)
