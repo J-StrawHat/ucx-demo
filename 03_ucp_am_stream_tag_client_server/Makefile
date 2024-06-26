@@ -1,6 +1,6 @@
 #Set path to the base directory of your UCX installation
-UCX_PATH=/home/oem/zwx/rdmalab/ucx-1.17.0/install/
-CUDA_PATH=/usr/local/cuda-11.4/
+UCX_PATH=/home/zwx/lib/ucx-1.17.0/install
+CUDA_PATH=/usr/local/cuda-11.7/
 
 CC=nvcc
 .c.o:

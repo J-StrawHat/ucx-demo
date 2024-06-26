@@ -106,6 +106,8 @@ void buffer_free(ucp_dt_iov_t *iov)
     for (idx = 0; idx < iov_cnt; idx++) {
         mem_type_free(iov[idx].buffer);
     }
+
+    free(iov);
 }
 
 int buffer_malloc(ucp_dt_iov_t *iov)
@@ -284,14 +286,16 @@ static ucs_status_t start_client(ucp_worker_h ucp_worker,
 
 static void print_iov(const ucp_dt_iov_t *iov)
 {
-    char *msg = alloca(test_string_length);
+    // char *msg = alloca(test_string_length);
+    char* msg = malloc(test_string_length);
     size_t idx;
 
     for (idx = 0; idx < iov_cnt; idx++) {
         /* In case of Non-System memory */
         mem_type_memcpy(msg, iov[idx].buffer, test_string_length);
-        printf("%s.\n", msg);
+        printf("%.16s.\n", msg); // only print the first 16 characters
     }
+    free(msg);
 }
 
 /**
@@ -404,7 +408,8 @@ fill_request_param(ucp_dt_iov_t *iov, int is_client,
 static int send_recv_stream(ucp_worker_h ucp_worker, ucp_ep_h ep, int is_server,
                             int current_iter)
 {
-    ucp_dt_iov_t *iov = alloca(iov_cnt * sizeof(ucp_dt_iov_t));
+    // ucp_dt_iov_t *iov = alloca(iov_cnt * sizeof(ucp_dt_iov_t));
+    ucp_dt_iov_t *iov = malloc(iov_cnt * sizeof(ucp_dt_iov_t));
     ucp_request_param_t param;
     test_req_t *request;
     size_t msg_length;
@@ -443,7 +448,8 @@ static int send_recv_stream(ucp_worker_h ucp_worker, ucp_ep_h ep, int is_server,
 static int send_recv_tag(ucp_worker_h ucp_worker, ucp_ep_h ep, int is_server,
                          int current_iter)
 {
-    ucp_dt_iov_t *iov = alloca(iov_cnt * sizeof(ucp_dt_iov_t)); // 分配 iov 列表
+    // ucp_dt_iov_t *iov = alloca(iov_cnt * sizeof(ucp_dt_iov_t)); // 分配 iov 列表
+    ucp_dt_iov_t* iov = malloc(iov_cnt * sizeof(ucp_dt_iov_t));
     ucp_request_param_t param;
     void *request;
     size_t msg_length;
@@ -499,8 +505,12 @@ ucs_status_t ucp_am_data_cb(void *arg, const void *header, size_t header_length,
          */
         am_data_desc.is_rndv = 1;
         am_data_desc.desc    = data;
+        printf("rndv request\n");
         return UCS_INPROGRESS;
     } // 对于 Rendezvous 请求，现在只是收到了特定的描述符，后面还需要调用 ucp_am_recv_data_nbx() 来发起 RDMA 读请求
+    else {
+        printf("eager request\n");
+    }
 
     /* Message delivered with eager protocol, data should be available
      * immediately
@@ -529,7 +539,8 @@ static int send_recv_am(ucp_worker_h ucp_worker, ucp_ep_h ep, int is_server,
                         int current_iter)
 {
     // 相比于 malloc，alloca 会在栈上分配内存，速度更快，并且会在函数返回时自动释放
-    ucp_dt_iov_t *iov = alloca(iov_cnt * sizeof(ucp_dt_iov_t)); 
+    // ucp_dt_iov_t *iov = alloca(iov_cnt * sizeof(ucp_dt_iov_t)); 
+    ucp_dt_iov_t* iov = malloc(iov_cnt * sizeof(ucp_dt_iov_t));
     test_req_t *request;
     ucp_request_param_t params;
     size_t msg_length;
@@ -912,7 +923,11 @@ static int client_server_do_work(ucp_worker_h ucp_worker, ucp_ep_h ep,
 {
     int i, ret = 0;
     ucs_status_t status;
-
+    struct timeval timestart;
+    struct timeval timeend;
+    if (!is_server) {
+        gettimeofday(&timestart, NULL);
+    }
     connection_closed = 0;
     // 循环
     for (i = 0; i < num_iterations; i++) {
@@ -945,6 +960,12 @@ static int client_server_do_work(ucp_worker_h ucp_worker, ucp_ep_h ep,
     }
 
     printf("%s FIN message\n", is_server ? "sent" : "received");
+    if (!is_server) {
+        gettimeofday(&timeend, NULL);
+        long diff = 1000000 * (timeend.tv_sec - timestart.tv_sec) + timeend.tv_usec - timestart.tv_usec;
+        double msTotalTime = 1.0f * diff / 1000.0;
+        printf("Total time = %lf ms\n", msTotalTime);
+    }
 
     /* Server waits until the client closed the connection after receiving FIN */
     while (is_server && !connection_closed) {
