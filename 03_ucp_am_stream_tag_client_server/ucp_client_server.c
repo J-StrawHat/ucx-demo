@@ -505,11 +505,11 @@ ucs_status_t ucp_am_data_cb(void *arg, const void *header, size_t header_length,
          */
         am_data_desc.is_rndv = 1;
         am_data_desc.desc    = data;
-        printf("rndv request\n");
+        // printf("rndv request\n");
         return UCS_INPROGRESS;
     } // 对于 Rendezvous 请求，现在只是收到了特定的描述符，后面还需要调用 ucp_am_recv_data_nbx() 来发起 RDMA 读请求
     else {
-        printf("eager request\n");
+        // printf("eager request\n");
     }
 
     /* Message delivered with eager protocol, data should be available
@@ -940,6 +940,14 @@ static int client_server_do_work(ucp_worker_h ucp_worker, ucp_ep_h ep,
         }
     }
 
+    printf("%s FIN message\n", is_server ? "sent" : "received");
+    if (!is_server) {
+        gettimeofday(&timeend, NULL);
+        long diff = 1000000 * (timeend.tv_sec - timestart.tv_sec) + timeend.tv_usec - timestart.tv_usec;
+        double msTotalTime = 1.0f * diff / 1000.0;
+        printf("Total time = %lf ms\n", msTotalTime);
+    }
+
     /* Register recv callback on the client side to receive FIN message */
     // 如果是客户端，需要预先注册 AM 接收 FIN 的回调函数
     if (!is_server && (send_recv_type == CLIENT_SERVER_SEND_RECV_AM)) {
@@ -957,14 +965,6 @@ static int client_server_do_work(ucp_worker_h ucp_worker, ucp_ep_h ep,
         fprintf(stderr, "%s failed on FIN message\n",
                 (is_server ? "server": "client"));
         goto out;
-    }
-
-    printf("%s FIN message\n", is_server ? "sent" : "received");
-    if (!is_server) {
-        gettimeofday(&timeend, NULL);
-        long diff = 1000000 * (timeend.tv_sec - timestart.tv_sec) + timeend.tv_usec - timestart.tv_usec;
-        double msTotalTime = 1.0f * diff / 1000.0;
-        printf("Total time = %lf ms\n", msTotalTime);
     }
 
     /* Server waits until the client closed the connection after receiving FIN */
