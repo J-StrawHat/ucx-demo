@@ -285,7 +285,7 @@ barrier(int oob_sock, void (*progress_cb)(void *arg), void *arg)
     return !(res == sizeof(dummy));
 }
 
-static inline int generate_test_string(char *str, int size)
+static inline int generate_test_string(char *str, size_t size)
 {
     char *tmp_str;
     int i;
